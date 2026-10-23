@@ -1,0 +1,4 @@
+/* Sidebar styles are in Shop.css */
+.cat-section-divider{height:1px;background:var(--border);margin:10px 0;}
+.cat-mens-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--light-violet);border:none;border-radius:8px;font-size:13px;font-weight:700;color:var(--violet);cursor:pointer;margin-bottom:4px;}
+.cat-sidebar-link.mens{padding-left:22px;}

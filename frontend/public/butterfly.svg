@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" fill="none">
+  <!-- Left upper wing -->
+  <path d="M60 40 C50 25, 25 10, 8 18 C-2 24, 5 42, 20 44 C35 46, 52 38, 60 40Z" fill="#7c3aed" opacity="0.85"/>
+  <!-- Right upper wing -->
+  <path d="M60 40 C70 25, 95 10, 112 18 C122 24, 115 42, 100 44 C85 46, 68 38, 60 40Z" fill="#7c3aed" opacity="0.85"/>
+  <!-- Left lower wing -->
+  <path d="M60 40 C52 52, 30 58, 18 68 C10 74, 14 62, 28 56 C42 50, 55 44, 60 40Z" fill="#5b21b6" opacity="0.75"/>
+  <!-- Right lower wing -->
+  <path d="M60 40 C68 52, 90 58, 102 68 C110 74, 106 62, 92 56 C78 50, 65 44, 60 40Z" fill="#5b21b6" opacity="0.75"/>
+  <!-- Wing patterns - upper left -->
+  <ellipse cx="30" cy="28" rx="8" ry="5" fill="rgba(233,213,255,0.5)" transform="rotate(-20 30 28)"/>
+  <ellipse cx="16" cy="32" rx="5" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(-10 16 32)"/>
+  <!-- Wing patterns - upper right -->
+  <ellipse cx="90" cy="28" rx="8" ry="5" fill="rgba(233,213,255,0.5)" transform="rotate(20 90 28)"/>
+  <ellipse cx="104" cy="32" rx="5" ry="3" fill="rgba(255,255,255,0.35)" transform="rotate(10 104 32)"/>
+  <!-- Body -->
+  <ellipse cx="60" cy="40" rx="2.5" ry="12" fill="#2e0057"/>
+  <!-- Antennae -->
+  <path d="M60 28 Q55 18 50 12" stroke="#2e0057" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M60 28 Q65 18 70 12" stroke="#2e0057" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <circle cx="50" cy="12" r="2" fill="#5b21b6"/>
+  <circle cx="70" cy="12" r="2" fill="#5b21b6"/>
+</svg>
