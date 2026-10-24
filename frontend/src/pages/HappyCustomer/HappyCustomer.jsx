@@ -24,7 +24,7 @@ const Butterfly = ({ size = 40, opacity = 0.5, color = '#7c3aed', rotate = 0 }) 
       style={{ opacity, transform: `rotate(${rotate}deg)`, filter: getFilter(color), objectFit: 'contain', pointerEvents: 'none', userSelect: 'none', display: 'block' }}
     />
   );
-};
+};   
 
 const CUSTOMERS = [
   { photo: '/image/customers/customers1.jpg', name: 'Divya R.',  place: 'Coimbatore', quote: 'Fit perfect ah irundhuchu, wore it for my sister\u2019s wedding!', stars: 5, span: 'tall' },

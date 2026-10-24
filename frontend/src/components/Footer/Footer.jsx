@@ -104,13 +104,13 @@ export default function Footer() {
 
           <a
             className="ft-info"
-            href="mailto:asarafshifana17@gmail.com"
+           href="https://mail.google.com/mail/?view=cm&fs=1&to=boutiquehilook965@gmail.com"
           >
             <span className="ft-info-icon">
               <i className="fa-solid fa-envelope"></i>
             </span>
             <span className="ft-email">
-              asarafshifana17@gmail.com
+              boutiquehilook965@gmail.com
             </span>
           </a>
 
