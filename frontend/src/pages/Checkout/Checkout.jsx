@@ -4,7 +4,8 @@ import { motion } from 'framer-motion';
 import { CartContext } from '../../context/CartContext';
 import { AuthContext } from '../../context/AuthContext';
 import API from '../../api';
-import { payOnline, onlinePaymentEnabled } from '../../utils/razorpay';
+import { payOnline, getPaymentConfig } from '../../utils/razorpay';
+import { COD_ENABLED } from '../../config';
 import './Checkout.css';
 
 export default function Checkout() {
@@ -18,17 +19,19 @@ export default function Checkout() {
   const [done, setDone] = useState(null);                 // { number, pending }
   const [error, setError] = useState('');
   const [onlineOn, setOnlineOn] = useState(false);
-  const [pm, setPm] = useState('cod');
+  const [payMode, setPayMode] = useState(null);           // 'test' | 'live'
+  const [pm, setPm] = useState(COD_ENABLED ? 'cod' : 'razorpay');
   const [addr, setAddr] = useState({ name: user?.name || '', phone: user?.phone || '', line1: '', city: '', state: 'Tamil Nadu', pincode: '' });
   const setA = (k) => (e) => setAddr((p) => ({ ...p, [k]: e.target.value }));
 
-  useEffect(() => { onlinePaymentEnabled().then(setOnlineOn); }, []);
+  useEffect(() => { getPaymentConfig().then((c) => { setOnlineOn(c.onlineEnabled); setPayMode(c.mode); }); }, []);
 
   const shipping = total >= 1499 ? 0 : 99;
   const grand = total + shipping;                         // coupon discount is applied by the server and shown on the order
 
   async function handleOrder(e) {
     e.preventDefault(); setError('');
+    if (pm === 'razorpay' && !onlineOn) return setError('Online payment is not available right now. Please try again later.');
     if (!/^\d{10}$/.test(addr.phone)) return setError('Enter a valid 10-digit phone number.');
     if (!/^\d{6}$/.test(addr.pincode)) return setError('Enter a valid 6-digit pincode.');
     setPlacing(true);
@@ -94,22 +97,26 @@ export default function Checkout() {
               <div className="checkout-form-box">
                 <h2><i className="fa-solid fa-wallet" style={{ color: 'var(--violet)', marginRight: 10 }} />Payment Method</h2>
                 <div className="pm-list">
-                  <label className={`pm-item ${pm === 'cod' ? 'on' : ''}`}>
-                    <input type="radio" name="pm" checked={pm === 'cod'} onChange={() => setPm('cod')} style={{ display: 'none' }} />
-                    <i className="fa-solid fa-money-bill-wave" /> Cash on Delivery
-                    {pm === 'cod' && <i className="fa-solid fa-circle-check" style={{ marginLeft: 'auto', color: 'var(--violet)' }} />}
-                  </label>
+                  {/* Cash on Delivery – switched off (set REACT_APP_ENABLE_COD=true to bring it back) */}
+                  {COD_ENABLED && (
+                    <label className={`pm-item ${pm === 'cod' ? 'on' : ''}`}>
+                      <input type="radio" name="pm" checked={pm === 'cod'} onChange={() => setPm('cod')} style={{ display: 'none' }} />
+                      <i className="fa-solid fa-money-bill-wave" /> Cash on Delivery
+                      {pm === 'cod' && <i className="fa-solid fa-circle-check" style={{ marginLeft: 'auto', color: 'var(--violet)' }} />}
+                    </label>
+                  )}
                   <label className={`pm-item ${pm === 'razorpay' ? 'on' : ''}`} style={!onlineOn ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}>
                     <input type="radio" name="pm" disabled={!onlineOn} checked={pm === 'razorpay'} onChange={() => setPm('razorpay')} style={{ display: 'none' }} />
                     <i className="fa-solid fa-credit-card" /> Online Payment (UPI / Card / Net Banking)
-                    {!onlineOn && <small style={{ marginLeft: 'auto' }}>Coming soon</small>}
+                    {!onlineOn && <small style={{ marginLeft: 'auto' }}>Not available</small>}
                     {pm === 'razorpay' && <i className="fa-solid fa-circle-check" style={{ marginLeft: 'auto', color: 'var(--violet)' }} />}
                   </label>
                 </div>
+                {payMode === 'test' && <p style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', padding: '8px 12px', borderRadius: 8, marginTop: 12 }}>🧪 Test mode – no real money is charged. UPI: <b>success@razorpay</b> · Card: 4111 1111 1111 1111 (any future date, any CVV)</p>}
               </div>
 
               {error && <p className="checkout-error">{error}</p>}
-              <button type="submit" className="btn-gold place-order-btn" disabled={placing}>
+              <button type="submit" className="btn-gold place-order-btn" disabled={placing || (pm === 'razorpay' && !onlineOn)}>
                 {placing ? 'Processing…' : pm === 'cod' ? `Place Order — ₹${grand.toLocaleString()}` : `Pay ₹${grand.toLocaleString()}`}
               </button>
             </form>

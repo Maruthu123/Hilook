@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../context/AuthContext';
+import { API_URL } from '../../api';
 import './AdminDashboard.css';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 /* ── ngrok-safe fetch ── */
 async function apiFetch(path, options = {}) {

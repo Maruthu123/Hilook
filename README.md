@@ -43,9 +43,12 @@ Neon SQL Editor la manual ah run panna nenacha `backend/src/db/schema.sql` paste
 | `testimonials`, `contact_messages` | Happy customers, contact form |
 
 ## 5. Payment
-* **Cash on Delivery** – default. Admin "Delivered" nu mark panna payment `paid` aagum.
-* **Online (Razorpay)** – `.env` la `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` kudutha "Pay Online" option automatic ah enable aagum. Amount server la DB la irundhu edukkum (browser la maathi mosadi panna mudiyathu).
+* Online only (Razorpay). Cash on Delivery is switched OFF (`ALLOW_COD=false`, `REACT_APP_ENABLE_COD=false`).
+* Use `rzp_test_` keys for testing. See DEPLOY_STEPS.md.
 
 ## 6. Deploy
 * Backend (Render/Railway): env variables ellam add pannunga, `FRONTEND_URL` = unga site URL, `NODE_ENV=production`
 * Frontend (Vercel/Netlify): `REACT_APP_API_URL` = backend URL, build `npm run build`
+
+
+Full step-by-step: **DEPLOY_STEPS.md**

@@ -16,6 +16,12 @@ export async function onlinePaymentEnabled() {
   try { const { data } = await API.get('/api/payment/config'); return !!data.onlineEnabled; } catch { return false; }
 }
 
+/** { onlineEnabled, mode: 'test'|'live'|null, codEnabled } – used by checkout screens. */
+export async function getPaymentConfig() {
+  try { const { data } = await API.get('/api/payment/config'); return { onlineEnabled: !!data.onlineEnabled, mode: data.mode || null, codEnabled: !!data.codEnabled }; }
+  catch { return { onlineEnabled: false, mode: null, codEnabled: false, unreachable: true }; }
+}
+
 /**
  * Pay for an ALREADY-CREATED order (the amount is read from the database by the server).
  * Resolves { ok:true } | { ok:false, dismissed?:true, msg }

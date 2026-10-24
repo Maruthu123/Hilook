@@ -5,9 +5,8 @@ import 'aos/dist/aos.css';
 import { motion } from 'framer-motion';
 import CategoriesSidebar from '../../components/CategoriesSidebar/CategoriesSidebar';
 import ProductCard from '../../components/ProductCard/ProductCard';
+import { API_URL } from '../../api';
 import '../Shop/Shop.css';
-
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 // ✅ Ngrok warning bypass — எல்லா fetch-லயும் இந்த header போகும்
 const FETCH_OPTS = {

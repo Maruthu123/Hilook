@@ -1,5 +1,6 @@
 const { query, tx } = require('../config/db');
 const { num } = require('../utils/helpers');
+const { codEnabled, razorpayConfigured } = require('../utils/payConfig');
 
 const STATUSES = ['placed', 'confirmed', 'packed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
 const FREE_SHIP_ABOVE = 1499;
@@ -35,7 +36,12 @@ const getOrderRow = async (where, args) => (await query(`${ORDER_SELECT} WHERE $
 // POST /api/orders
 exports.createOrder = async (req, res) => {
   const { items, shippingAddress: a = {}, couponCode } = req.body;
-  const method = req.body.paymentMethod === 'razorpay' ? 'razorpay' : 'cod';
+  // Online payment is the default. Cash on Delivery is accepted only when ALLOW_COD=true.
+  const method = req.body.paymentMethod === 'cod' ? 'cod' : 'razorpay';
+  if (method === 'cod' && !codEnabled())
+    return res.status(400).json({ success: false, message: 'Cash on Delivery is not available. Please pay online.' });
+  if (method === 'razorpay' && !razorpayConfigured())
+    return res.status(503).json({ success: false, message: 'Online payment is not available right now. Please try again later.' });
   if (!Array.isArray(items) || !items.length) return res.status(400).json({ success: false, message: 'Your cart is empty' });
   if (!a.fullName || !/^\d{10}$/.test(a.phone || '') || !a.addressLine1)
     return res.status(400).json({ success: false, message: 'Name, 10-digit phone and address are required' });

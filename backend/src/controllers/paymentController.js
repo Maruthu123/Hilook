@@ -1,12 +1,9 @@
 const crypto = require('crypto');
 const Razorpay = require('razorpay');
 const { query, tx } = require('../config/db');
+const { codEnabled, razorpayConfigured: configured, razorpayMode } = require('../utils/payConfig');
 
 let rzp = null;
-const configured = () => {
-  const { RAZORPAY_KEY_ID: k, RAZORPAY_KEY_SECRET: s } = process.env;
-  return !!(k && s && !k.startsWith('your_'));
-};
 const client = () => {
   if (!configured()) return null;
   if (!rzp) rzp = new Razorpay({ key_id: process.env.RAZORPAY_KEY_ID, key_secret: process.env.RAZORPAY_KEY_SECRET });
@@ -14,12 +11,12 @@ const client = () => {
 };
 
 // GET /api/payment/config  → frontend uses this to show/hide "Pay Online"
-exports.config = (req, res) => res.json({ success: true, onlineEnabled: configured(), key: configured() ? process.env.RAZORPAY_KEY_ID : null });
+exports.config = (req, res) => res.json({ success: true, onlineEnabled: configured(), mode: razorpayMode(), codEnabled: codEnabled(), key: configured() ? process.env.RAZORPAY_KEY_ID : null });
 
 // POST /api/payment/create-order  { orderId }   (amount is read from the DB, never trusted from the browser)
 exports.createRazorpayOrder = async (req, res) => {
   const r = client();
-  if (!r) return res.status(503).json({ success: false, message: 'Online payment is not enabled yet. Please choose Cash on Delivery.' });
+  if (!r) return res.status(503).json({ success: false, message: 'Online payment is not available right now. Please try again later.' });
   const { rows } = await query(`SELECT * FROM orders WHERE id::text=$1 AND user_id=$2`, [String(req.body.orderId), req.user.id]);
   const o = rows[0];
   if (!o) return res.status(404).json({ success: false, message: 'Order not found' });

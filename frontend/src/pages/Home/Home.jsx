@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence, useInView, animate } from 'framer-motion';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import { API_URL } from '../../api';
+import { COD_ENABLED } from '../../config';
 import './Home.css';
 
 /* ───────────── data ───────────── */
@@ -19,12 +20,12 @@ const CATS = [
   { name: 'Party Wear', img: '/image/party/party1.jpg',        path: '/party',     count: '16 Designs' },
   { name: 'Handbags',   img: '/image/handbag/handbag1.jpeg',   path: '/handbag',   count: '26 Designs' },
 ];
-const TICKER = ['✨ New arrivals every week', '🚚 Delivery across India in 7–10 days', '💬 Live WhatsApp support', '🧵 Custom stitching available', '💵 Cash on Delivery', '🔒 Secure online payment'];
+const TICKER = ['✨ New arrivals every week', '🚚 Delivery across India in 7–10 days', '💬 Live WhatsApp support', '🧵 Custom stitching available', ...(COD_ENABLED ? ['💵 Cash on Delivery'] : []), '🔒 Secure online payment'];
 const FEATURES = [
   { icon: 'fa-gem',        t: 'Handcrafted Quality', d: 'Every piece is finished by experienced tailors and embroidery artists.' },
   { icon: 'fa-ruler-combined', t: 'Perfect Fit',     d: 'Detailed size charts and custom stitching for a fit that feels made for you.' },
   { icon: 'fa-truck-fast', t: 'Fast Delivery',       d: 'Live order tracking from packing to your doorstep, all over India.' },
-  { icon: 'fa-hand-holding-dollar', t: 'Easy Payment', d: 'Pay online securely or choose Cash on Delivery – your choice.' },
+  { icon: 'fa-hand-holding-dollar', t: 'Easy Payment', d: COD_ENABLED ? 'Pay online securely or choose Cash on Delivery – your choice.' : 'Pay securely online with UPI, cards or net banking.' },
 ];
 const STEPS = [
   { n: '01', t: 'Pick your design', d: 'Browse hundreds of blouses, chudidars and festive wear.' },
@@ -505,7 +506,7 @@ export default function Home() {
             </div>
             <div className="ct-trust">
               <span><i className="fa-solid fa-circle-check" /> Custom measurements</span>
-              <span><i className="fa-solid fa-circle-check" /> Cash on Delivery</span>
+              <span><i className="fa-solid fa-circle-check" /> {COD_ENABLED ? 'Cash on Delivery' : 'Secure online payment'}</span>
               <span><i className="fa-solid fa-circle-check" /> 7–10 day delivery</span>
             </div>
           </Reveal>

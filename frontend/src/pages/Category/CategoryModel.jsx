@@ -6,7 +6,8 @@ import { WishlistContext } from '../../context/WishlistContext';
 import { AuthContext } from '../../context/AuthContext';
 import API, { API_URL } from '../../api';
 import { resolveCategory, modelPath } from '../../utils/categories';
-import { payOnline, onlinePaymentEnabled } from '../../utils/razorpay';
+import { payOnline, getPaymentConfig } from '../../utils/razorpay';
+import { COD_ENABLED } from '../../config';
 import './ProductDetail.css';
 
 /* ─── Butterfly + Trail — same signature motif as the Home hero ─── */
@@ -91,7 +92,8 @@ export default function CategoryModel({ cat, path }) {
   /* order modal */
   const [showModal, setShowModal] = useState(false);
   const [step, setStep] = useState(1);
-  const [payMethod, setPayMethod] = useState('cod');
+  const [payMethod, setPayMethod] = useState(COD_ENABLED ? 'cod' : 'razorpay');
+  const [payMode, setPayMode] = useState(null);                // 'test' | 'live'
   const [onlineOn, setOnlineOn] = useState(false);
   const [busy, setBusy] = useState(false);
   const [orderInfo, setOrderInfo] = useState(null);
@@ -126,7 +128,7 @@ export default function CategoryModel({ cat, path }) {
     return () => { alive = false; };
   }, [id]);
 
-  useEffect(() => { onlinePaymentEnabled().then(setOnlineOn); }, []);
+  useEffect(() => { getPaymentConfig().then((c) => { setOnlineOn(c.onlineEnabled); setPayMode(c.mode); }); }, []);
 
   const rawImgs = product?.images?.length ? product.images : [];
   const imgs = getGalleryImages(rawImgs, 4);
@@ -160,12 +162,13 @@ export default function CategoryModel({ cat, path }) {
   function openModal() {
     if (!user) { navigate('/login', { state: { from: location.pathname } }); return; }   // must be logged in to order
     setForm((f) => ({ ...f, size: selSize || product.sizes[0] || '', color: selColor || product.colors[0] || '', name: f.name || user.name || '', phone: f.phone || user.phone || '' }));
-    setStep(1); setErrors({}); setOrderMsg(''); setOrderInfo(null); setPayMethod('cod');
+    setStep(1); setErrors({}); setOrderMsg(''); setOrderInfo(null); setPayMethod(COD_ENABLED ? 'cod' : 'razorpay');
     setShowModal(true);
   }
   function closeModal() { setShowModal(false); setStep(1); setBusy(false); setErrors({}); }
 
   async function placeOrder() {
+    if (payMethod === 'razorpay' && !onlineOn) { setOrderMsg('Online payment is not available right now. Please try again later.'); return; }
     setBusy(true); setOrderMsg('');
     try {
       const { data } = await API.post('/api/orders', {
@@ -265,7 +268,7 @@ export default function CategoryModel({ cat, path }) {
             {youSave > 0 && <p className="pd-save-note">You save &#8377;{youSave.toLocaleString()} on this order</p>}
 
             <div className="pd-feature-tags">
-              <span>&#9989; Handcrafted</span><span>&#128666; Free Delivery &#8377;1,499+</span><span>&#128181; Cash on Delivery</span>
+              <span>&#9989; Handcrafted</span><span>&#128666; Free Delivery &#8377;1,499+</span>{COD_ENABLED ? <span>&#128181; Cash on Delivery</span> : <span>&#128274; Secure Online Payment</span>}
             </div>
 
             {product.sizes.length > 0 && (<>
@@ -425,19 +428,23 @@ export default function CategoryModel({ cat, path }) {
 
                   <p className="pb-pay-title">Payment Method</p>
                   <div className="pb-pay-options">
-                    <label className={`pb-pay-opt ${payMethod === 'cod' ? 'on' : ''}`}>
-                      <input type="radio" name="pay" checked={payMethod === 'cod'} onChange={() => setPayMethod('cod')} />
-                      <i className="fa-solid fa-money-bill-wave" /><div><b>Cash on Delivery</b><small>Pay when your order arrives</small></div>
-                    </label>
+                    {/* Cash on Delivery – switched off (set REACT_APP_ENABLE_COD=true to bring it back) */}
+                    {COD_ENABLED && (
+                      <label className={`pb-pay-opt ${payMethod === 'cod' ? 'on' : ''}`}>
+                        <input type="radio" name="pay" checked={payMethod === 'cod'} onChange={() => setPayMethod('cod')} />
+                        <i className="fa-solid fa-money-bill-wave" /><div><b>Cash on Delivery</b><small>Pay when your order arrives</small></div>
+                      </label>
+                    )}
                     <label className={`pb-pay-opt ${payMethod === 'razorpay' ? 'on' : ''} ${!onlineOn ? 'off' : ''}`}>
                       <input type="radio" name="pay" disabled={!onlineOn} checked={payMethod === 'razorpay'} onChange={() => setPayMethod('razorpay')} />
-                      <i className="fa-solid fa-credit-card" /><div><b>Pay Online</b><small>{onlineOn ? 'UPI · Cards · Net Banking' : 'Coming soon'}</small></div>
+                      <i className="fa-solid fa-credit-card" /><div><b>Pay Online</b><small>{onlineOn ? 'UPI · Cards · Net Banking' : 'Not available right now'}</small></div>
                     </label>
                   </div>
+                  {payMode === 'test' && <p style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', padding: '8px 12px', borderRadius: 8, marginTop: 10 }}>🧪 Test mode – no real money. UPI: <b>success@razorpay</b> · Card: 4111 1111 1111 1111 (any future date, any CVV)</p>}
                   {orderMsg && <p className="pb-err" style={{ marginTop: 10 }}>{orderMsg}</p>}
                   <div className="pb-confirm-btns">
                     <button className="pb-outline-btn" onClick={() => setStep(1)} disabled={busy}>&#8592; Edit</button>
-                    <button className="pb-pay-btn" onClick={placeOrder} disabled={busy}>
+                    <button className="pb-pay-btn" onClick={placeOrder} disabled={busy || (payMethod === 'razorpay' && !onlineOn)}>
                       {busy ? 'Please wait…' : payMethod === 'cod' ? 'Place Order (COD)' : `Pay ₹${(subTotal + delivery).toLocaleString()}`}
                     </button>
                   </div>

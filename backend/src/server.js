@@ -17,8 +17,17 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(morgan('dev'));
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 600 }));
 
-const origins = [process.env.FRONTEND_URL, 'http://localhost:3000'].filter(Boolean).map((o) => o.replace(/\/$/, ''));
-app.use(cors({ origin: (o, cb) => (!o || origins.includes(o.replace(/\/$/, '')) ? cb(null, true) : cb(new Error('CORS blocked: ' + o))), credentials: true }));
+// FRONTEND_URL can hold several sites separated by commas, e.g.  https://hilookboutique.netlify.app,https://www.mydomain.com
+const origins = [...String(process.env.FRONTEND_URL || '').split(','), 'http://localhost:3000', 'http://127.0.0.1:3000']
+  .map((o) => o.trim().replace(/\/$/, '')).filter(Boolean);
+app.use(cors({
+  origin: (o, cb) => {
+    if (!o || origins.includes(o.replace(/\/$/, ''))) return cb(null, true);
+    console.warn('⚠️  CORS blocked origin:', o, '→ add it to FRONTEND_URL. Allowed:', origins.join(', '));
+    return cb(null, false);            // no CORS headers → browser blocks it (no 500 crash)
+  },
+  credentials: true,
+}));
 app.use(express.json({ limit: '10mb' }));
 
 app.use('/api/auth',         require('./routes/authRoutes'));
@@ -35,6 +44,7 @@ app.use('/api/contact',      misc.contact);
 app.use('/api/admin',        require('./routes/adminRoutes'));
 app.use('/admin',            require('./routes/adminRoutes'));
 
+app.get('/', (req, res) => res.json({ status: 'OK', service: 'Nisha Boutique API' }));
 app.get('/api/health', async (req, res) => {
   try { await pool.query('SELECT 1'); res.json({ status: 'OK', database: 'Neon connected' }); }
   catch (e) { res.status(500).json({ status: 'ERROR', database: e.message }); }
